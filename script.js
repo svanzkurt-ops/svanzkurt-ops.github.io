@@ -39,6 +39,40 @@ navLinks.forEach(link => {
     });
 });
 
+// ==================== Portfolio Filtering ==================== //
+const filterBtns = document.querySelectorAll('.tab-btn');
+const portfolioCards = document.querySelectorAll('.portfolio-card');
+
+filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Remove active class from all buttons
+        filterBtns.forEach(b => b.classList.remove('active'));
+        // Add active class to clicked button
+        btn.classList.add('active');
+        
+        const filterValue = btn.getAttribute('data-filter');
+        
+        // Filter portfolio cards
+        portfolioCards.forEach(card => {
+            const category = card.getAttribute('data-category');
+            
+            if (filterValue === 'all' || category === filterValue) {
+                card.style.display = 'block';
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'scale(1)';
+                }, 10);
+            } else {
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.8)';
+                setTimeout(() => {
+                    card.style.display = 'none';
+                }, 300);
+            }
+        });
+    });
+});
+
 // ==================== Contact Form Handler ==================== //
 const contactForm = document.getElementById('contactForm');
 
@@ -46,14 +80,19 @@ if (contactForm) {
     contactForm.addEventListener('submit', (e) => {
         e.preventDefault();
         
-        const formData = new FormData(contactForm);
-        const name = contactForm.querySelector('input[type="text"]').value;
-        const email = contactForm.querySelector('input[type="email"]').value;
-        const message = contactForm.querySelector('textarea').value;
+        const nameInput = contactForm.querySelector('input[type="text"]');
+        const emailInput = contactForm.querySelector('input[type="email"]');
+        const subjectInput = contactForm.querySelectorAll('input[type="text"]')[1];
+        const messageInput = contactForm.querySelector('textarea');
+        
+        const name = nameInput.value;
+        const email = emailInput.value;
+        const subject = subjectInput ? subjectInput.value : '';
+        const message = messageInput.value;
         
         // Validate form
         if (!name || !email || !message) {
-            alert('Please fill in all fields');
+            alert('Please fill in all required fields');
             return;
         }
         
@@ -65,7 +104,7 @@ if (contactForm) {
         }
         
         // Show success message
-        alert('Thank you for your message! I will get back to you soon.');
+        alert(`Thank you for your message, ${name}! I'll get back to you soon.`);
         
         // Reset form
         contactForm.reset();
@@ -88,7 +127,7 @@ const observer = new IntersectionObserver((entries) => {
 }, observerOptions);
 
 // Observe all cards
-document.querySelectorAll('.achievement-card, .project-card, .timeline-item').forEach(el => {
+document.querySelectorAll('.service-card, .portfolio-card, .award-card, .timeline-item, .stat-card, .value-item').forEach(el => {
     el.style.opacity = '0';
     el.style.transform = 'translateY(20px)';
     el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
@@ -102,7 +141,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         const target = document.querySelector(this.getAttribute('href'));
         
         if (target) {
-            const headerOffset = 70;
+            const headerOffset = 80;
             const elementPosition = target.getBoundingClientRect().top + window.pageYOffset;
             const offsetPosition = elementPosition - headerOffset;
 
@@ -111,16 +150,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 behavior: 'smooth'
             });
         }
-    });
-});
-
-// ==================== Project Links Handler ==================== //
-const projectLinks = document.querySelectorAll('.project-link');
-
-projectLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        alert('Project details page would be linked here. Replace the href="#" with your actual project URL.');
     });
 });
 
@@ -147,26 +176,32 @@ skillBars.forEach(bar => {
     skillBarObserver.observe(bar);
 });
 
-// ==================== Counter Animation ==================== //
-const stats = document.querySelectorAll('.stat h3');
+// ==================== Counter Animation for Stats ==================== //
+const stats = document.querySelectorAll('.stat-card h3');
 
 const counterObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             const target = entry.target;
-            const finalValue = parseInt(target.textContent);
-            let currentValue = 0;
-            const increment = Math.ceil(finalValue / 50);
+            const text = target.textContent;
             
-            const counter = setInterval(() => {
-                currentValue += increment;
-                if (currentValue >= finalValue) {
-                    target.textContent = finalValue + '+';
-                    clearInterval(counter);
-                } else {
-                    target.textContent = currentValue + '+';
-                }
-            }, 30);
+            // Extract number from text (e.g., "5+" becomes "5")
+            const numberMatch = text.match(/\d+/);
+            if (numberMatch) {
+                const finalValue = parseInt(numberMatch[0]);
+                let currentValue = 0;
+                const increment = Math.ceil(finalValue / 50);
+                
+                const counter = setInterval(() => {
+                    currentValue += increment;
+                    if (currentValue >= finalValue) {
+                        target.textContent = finalValue + '+';
+                        clearInterval(counter);
+                    } else {
+                        target.textContent = currentValue + '+';
+                    }
+                }, 30);
+            }
             
             counterObserver.unobserve(target);
         }
@@ -185,31 +220,12 @@ window.addEventListener('load', () => {
 document.body.style.opacity = '0';
 document.body.style.transition = 'opacity 0.5s ease';
 
-// ==================== Dark Mode Toggle (Optional) ==================== //
-const darkModeToggle = () => {
-    const root = document.documentElement;
-    const isDarkMode = root.style.colorScheme === 'dark';
-    
-    if (isDarkMode) {
-        root.style.colorScheme = 'light';
-        localStorage.setItem('theme', 'light');
-    } else {
-        root.style.colorScheme = 'dark';
-        localStorage.setItem('theme', 'dark');
-    }
-};
-
-// Check for saved theme preference
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme) {
-    document.documentElement.style.colorScheme = savedTheme;
-}
-
 // ==================== Keyboard Navigation ==================== //
 document.addEventListener('keydown', (e) => {
     // Skip to main content with Alt+M
     if (e.altKey && e.code === 'KeyM') {
-        document.querySelector('section').focus();
+        const mainSection = document.querySelector('section');
+        if (mainSection) mainSection.focus();
     }
 });
 
@@ -219,9 +235,11 @@ if ('IntersectionObserver' in window) {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const img = entry.target;
-                img.src = img.dataset.src;
-                img.classList.add('loaded');
-                imageObserver.unobserve(img);
+                if (img.dataset.src) {
+                    img.src = img.dataset.src;
+                    img.classList.add('loaded');
+                    imageObserver.unobserve(img);
+                }
             }
         });
     });
@@ -231,6 +249,20 @@ if ('IntersectionObserver' in window) {
     });
 }
 
+// ==================== Active Tab Initialization ==================== //
+document.addEventListener('DOMContentLoaded', () => {
+    const firstTab = document.querySelector('.tab-btn');
+    if (firstTab) {
+        firstTab.classList.add('active');
+    }
+});
+
+// ==================== Portfolio Card Transitions ==================== //
+portfolioCards.forEach(card => {
+    card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+});
+
 // ==================== Console Message ==================== //
-console.log('%cWelcome to Svanzkurt\'s Portfolio!', 'color: #6366f1; font-size: 20px; font-weight: bold;');
-console.log('%cFeel free to explore and get in touch!', 'color: #ec4899; font-size: 14px;');
+console.log('%c🎨 Welcome to SAZONSHOTS Portfolio!', 'color: #FF6B6B; font-size: 20px; font-weight: bold;');
+console.log('%c📸 Creative Multimedia Solutions', 'color: #4ECDC4; font-size: 14px; font-weight: bold;');
+console.log('%c✨ Photography | Videography | Design | Systems', 'color: #FFE66D; font-size: 12px;');
